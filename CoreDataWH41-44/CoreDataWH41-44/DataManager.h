@@ -23,5 +23,6 @@
 + (DataManager*) sharedManager;
 - (void) generateAndAddUniversity;
 - (Student*) randomStudent;
+- (Student*) addEmptyStudent;
 
 @end

@@ -34,6 +34,8 @@
 {
     StudentDetailViewController *vc = [[StudentDetailViewController alloc] initWithStyle:UITableViewStylePlain];
     
+    vc.student = nil;
+    
     [self.navigationController pushViewController:vc animated:YES];
 }
 
@@ -89,6 +91,8 @@
     Student *student = (Student*)object;
     
     cell.textLabel.text = [NSString stringWithFormat:@"%@ %@", student.firstName, student.lastName];
+    
+    cell.detailTextLabel.text = student.email;
     
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 }

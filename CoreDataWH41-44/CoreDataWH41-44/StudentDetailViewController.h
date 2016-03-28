@@ -10,7 +10,9 @@
 
 @class Student;
 
-@interface StudentDetailViewController : UITableViewController
+@interface StudentDetailViewController : CoreDataViewController
+
+@property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 
 @property (strong, nonatomic) Student *student;
 

@@ -11,13 +11,18 @@
 #import "Student.h"
 
 
-@interface StudentDetailViewController () <UITableViewDelegate, UITableViewDataSource>
+@interface StudentDetailViewController () <UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate>
 
 @property (strong, nonatomic) NSArray *namesOfRows;
+
+@property (strong, nonatomic) UITextField *firstNameField;
+@property (strong, nonatomic) UITextField *lastNameField;
+@property (strong, nonatomic) UITextField *emailField;
 
 @end
 
 @implementation StudentDetailViewController
+@synthesize managedObjectContext =_managedObjectContext;
 
 
 - (void)viewDidLoad {
@@ -33,16 +38,31 @@
     
     self.tableView.delegate = self;
     
+    if (!self.student)
+    {
+        Student *student = [[DataManager sharedManager] addEmptyStudent];
+        self.student = student;
+    }
     
     
-    
+}
+
+- (void) saveContext {
+    // Save the context.
+    NSError *error = nil;
+    if (![[[DataManager sharedManager] managedObjectContext] save:&error]) {
+        
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+        
+    }
 }
 
 #pragma mark - Actions
 
 - (void) actionSave:(UIBarButtonItem*)sender
 {
-    [[DataManager sharedManager] saveContext];
+    [self saveContext];
 }
 
 #pragma mark - UITableViewDataSource
@@ -58,83 +78,60 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
     }
 
-    if (!self.student)
+    if (indexPath.row == 0)
     {
-        Student *student = [[DataManager sharedManager] randomStudent];
+        cell.textLabel.text = [self.namesOfRows objectAtIndex:indexPath.row];
         
-        if (indexPath.row == 0)
-        {
-            cell.textLabel.text = [self.namesOfRows objectAtIndex:indexPath.row];
-            
-            UITextField *firstNameField = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetWidth(cell.frame) / 2, 0,
-                                                                                        CGRectGetWidth(cell.frame) / 2, 43)];
-            firstNameField.placeholder = @"Enter First Name";
-            student.firstName = firstNameField.text;
-            
-            [cell addSubview:firstNameField];
-        }
-        else if (indexPath.row == 1)
-        {
-            cell.textLabel.text = [self.namesOfRows objectAtIndex:indexPath.row];
-            
-            UITextField *lastNameField = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetWidth(cell.frame) / 2, 0,
-                                                                                     CGRectGetWidth(cell.frame) / 2, 43)];
-            student.lastName = lastNameField.text;
-            lastNameField.placeholder = @"Enter Last Name";
-            [cell addSubview:lastNameField];
-        }
-        else if (indexPath.row == 2)
-        {
-            cell.textLabel.text = [self.namesOfRows objectAtIndex:indexPath.row];
-            
-            UITextField *emailField = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetWidth(cell.frame) / 2, 0,
+        UITextField *firstNameField = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetWidth(cell.frame) / 2, 0,
                                                                                     CGRectGetWidth(cell.frame) / 2, 43)];
-            student.email = emailField.text;
-            emailField.placeholder = @"Enter Email";
-            emailField.adjustsFontSizeToFitWidth = YES;
-            emailField.minimumFontSize = 12.f;
-            [cell addSubview:emailField];
-        }
+        firstNameField.placeholder = @"Enter First Name";
         
-        self.student = student;
-        
-    }else
-    {
-        if (indexPath.row == 0)
+        if (self.student.firstName)
         {
-            cell.textLabel.text = [self.namesOfRows objectAtIndex:indexPath.row];
-            
-            UITextField *firstNameField = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetWidth(cell.frame) / 2, 0,
-                                                                                        CGRectGetWidth(cell.frame) / 2, 43)];
             firstNameField.text = self.student.firstName;
-            
-            [cell addSubview:firstNameField];
         }
-        else if (indexPath.row == 1)
-        {
-            cell.textLabel.text = [self.namesOfRows objectAtIndex:indexPath.row];
-            
-            UITextField *lastNameField = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetWidth(cell.frame) / 2, 0,
-                                                                                       CGRectGetWidth(cell.frame) / 2, 43)];
-            lastNameField.text = self.student.lastName;
-            [cell addSubview:lastNameField];
-        }
-        else if (indexPath.row == 2)
-        {
-            cell.textLabel.text = [self.namesOfRows objectAtIndex:indexPath.row];
-            
-            UITextField *emailField = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetWidth(cell.frame) / 2, 0,
-                                                                                    CGRectGetWidth(cell.frame) / 2, 43)];
-            emailField.text = self.student.email;
-            emailField.adjustsFontSizeToFitWidth = YES;
-            emailField.minimumFontSize = 12.f;
-            [cell addSubview:emailField];
-        }
+        
+        [cell addSubview:firstNameField];
+        firstNameField.delegate = self;
+        self.firstNameField = firstNameField;
     }
-    
-    
-    
-    
+    else if (indexPath.row == 1)
+    {
+        cell.textLabel.text = [self.namesOfRows objectAtIndex:indexPath.row];
+        
+        UITextField *lastNameField = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetWidth(cell.frame) / 2, 0,
+                                                                                   CGRectGetWidth(cell.frame) / 2, 43)];
+        lastNameField.placeholder = @"Enter Last Name";
+        
+        if (self.student.lastName)
+        {
+            lastNameField.text = self.student.lastName;
+        }
+        
+        [cell addSubview:lastNameField];
+        lastNameField.delegate = self;
+        self.lastNameField = lastNameField;
+    }
+    else if (indexPath.row == 2)
+    {
+        cell.textLabel.text = [self.namesOfRows objectAtIndex:indexPath.row];
+        
+        UITextField *emailField = [[UITextField alloc] initWithFrame:CGRectMake(CGRectGetWidth(cell.frame) / 2, 0,
+                                                                                CGRectGetWidth(cell.frame) / 2, 43)];
+        emailField.placeholder = @"Enter Email";
+        
+        if (self.student.email)
+        {
+            emailField.text = self.student.email;
+        }
+        
+        emailField.returnKeyType = UIReturnKeyDone;
+        emailField.adjustsFontSizeToFitWidth = YES;
+        emailField.minimumFontSize = 12.f;
+        [cell addSubview:emailField];
+        emailField.delegate = self;
+        self.emailField = emailField;
+    }
     
     return cell;
 }
@@ -163,6 +160,65 @@
     
 }
 
+#pragma mark - UITextFieldDelegate
+
+- (void)textFieldDidEndEditing:(UITextField *)textField
+{
+    if ([textField.text isEqualToString:@""]) //if field empty
+    {
+        UIAlertController * alert=   [UIAlertController
+                                      alertControllerWithTitle:nil
+                                      message:@"It is field should not be empty!"
+                                      preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction* ok = [UIAlertAction
+                             actionWithTitle:@"OK"
+                             style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction * action)
+                             {
+                                 [alert dismissViewControllerAnimated:YES completion:nil];
+                                 
+                             }];
+        
+        [alert addAction:ok];
+        [self presentViewController:alert animated:YES completion:nil];
+    }
+    
+    if ([textField isEqual:self.firstNameField])
+    {
+        self.student.firstName = self.firstNameField.text;
+        [self saveContext];
+    }
+    else if ([textField isEqual:self.lastNameField])
+    {
+        self.student.lastName = self.lastNameField.text;
+        [self saveContext];
+    }
+    else if ([textField isEqual:self.emailField])
+    {
+        self.student.email = self.emailField.text;
+        [self saveContext];
+    }
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    if ([textField isEqual:self.firstNameField])
+    {
+        [self.lastNameField becomeFirstResponder];
+    }
+    else if ([textField isEqual:self.lastNameField])
+    {
+        [self.emailField becomeFirstResponder];
+    }
+    else if ([textField isEqual:self.emailField])
+    {
+        [textField resignFirstResponder];
+    }
+    
+    
+    return YES;
+}
 
 
 

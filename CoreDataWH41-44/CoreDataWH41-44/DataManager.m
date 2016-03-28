@@ -72,7 +72,17 @@ static NSString* lastNames[] = {
     */
     
     
+    /*
+    NSArray *allObjects = [self allObjects];
     
+    for (id object in allObjects)
+    {
+        //ставим на удаление
+        [self.managedObjectContext deleteObject:object];
+    }
+    //делаем сейв(удаляем окончательно)
+    [self.managedObjectContext save:nil];
+    */
     
 }
 
@@ -93,7 +103,7 @@ static NSString* lastNames[] = {
 {
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     
-    NSEntityDescription *description = [NSEntityDescription entityForName:@"Object"
+    NSEntityDescription *description = [NSEntityDescription entityForName:@"Student"
                                                    inManagedObjectContext:self.managedObjectContext];
     
     [request setEntity:description];
@@ -137,6 +147,17 @@ static NSString* lastNames[] = {
     student.firstName = firstNames[arc4random_uniform(50)];
     student.lastName = lastNames[arc4random_uniform(50)];
     student.email = [NSString stringWithFormat:@"%@%@@gmail.com", student.firstName, student.lastName];
+    
+    return student;
+}
+
+- (Student*) addEmptyStudent
+{
+    Student *student = [NSEntityDescription insertNewObjectForEntityForName:@"Student"
+                                                     inManagedObjectContext:self.managedObjectContext];
+//    student.firstName = firstNames[arc4random_uniform(50)];
+//    student.lastName = lastNames[arc4random_uniform(50)];
+//    student.email = [NSString stringWithFormat:@"%@%@@gmail.com", student.firstName, student.lastName];
     
     return student;
 }
